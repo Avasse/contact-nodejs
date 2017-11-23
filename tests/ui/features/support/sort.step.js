@@ -5,9 +5,7 @@ const { Given , Then , When } = require('cucumber');
 const  expect = require('chai');
 const  assert = require('assert');
 
-let apiBeforeDel, htmlBeforeDel;
-
-Given('REMOVE The contact list is display', function (callback) {
+Given('SORT The contact list is display', function (callback) {
     this.browser.visit("http://127.0.0.1:3000", (err) => {
         if (err) throw err;
         let tr = this.browser.queryAll('tr')[0].cells;
@@ -25,20 +23,23 @@ Given('REMOVE The contact list is display', function (callback) {
     });
 });
 
-When('User clicks on remove button of the first contact', function (callback) {
-    let c = this.browser.tabs.current.Contact, contact = c.Contacts.instance().iterator().next();
-    apiBeforeDel = contact.firstName();
-    htmlBeforeDel = this.browser.queryAll('td#cellFirstName')[0].innerHTML;
-    this.browser.query('a#button_' + contact.id()).click();
+When('User clicks on sort button', function (callback) {
+    this.browser.query('a#button_sort').click();
     callback();
 });
 
-Then('The first contact is removed', function (callback) {
-    let c = this.browser.tabs.current.Contact, contactAfterDel = c.Contacts.instance().iterator().next();
-    let apiAfterDel = contactAfterDel.firstName();
-    let htmlAfterDel = this.browser.queryAll('td#cellFirstName')[0].innerHTML;
-    let ok = apiBeforeDel !== apiAfterDel && htmlBeforeDel !== htmlAfterDel;
+Then('The list is alphabetically sorted', function (callback) {
+    let arr = [], c = this.browser.tabs.current.Contact;
+    let iterator = c.Contacts.instance().iterator();
+    while (iterator.hasNext()) {
+        let contact = iterator.next();
+        arr.push(contact.lastName());
+    }
 
-    assert(ok, true, "Remove contact OK");
+    let sortedArr = arr.sort();
+
+    assert(this.browser.queryAll('td#cellLastName')[0].innerHTML, sortedArr[0]);
+    assert(this.browser.queryAll('td#cellLastName')[1].innerHTML, sortedArr[1]);
+    assert(this.browser.queryAll('td#cellLastName')[2].innerHTML, sortedArr[2]);
     callback();
 });
